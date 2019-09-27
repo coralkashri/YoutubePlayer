@@ -29,8 +29,7 @@ function round_array() {
 }
 
 function reset_terminal() {
-	#tput reset
-	echo "";
+	tput reset
 }
 
 # read_char [address]var
