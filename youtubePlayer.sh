@@ -29,7 +29,8 @@ function round_array() {
 }
 
 function reset_terminal() {
-	tput reset
+	#tput reset
+	echo "";
 }
 
 # read_char [address]var
@@ -144,9 +145,10 @@ function print_current_playlist() {
 	echo -n "" > $temp_songs_names
 	while read current_song;
 	do
+		OLD_IFS=$IFS
 		IFS='+'
 		read -a song_info <<< "$current_song"
-		IFS=''
+		IFS=$OLD_IFS
 		song_name=${song_info[1]}
 		echo $song_name >> $temp_songs_names;
 	done < $path_to_temp_playlist
@@ -367,25 +369,20 @@ do
 
 	status=$(sed "1q;d" $path_to_status_update_file)
 	if [[ ! -z "$status" ]] ; then
-		if [ "$status" == "0" ]
-		then # End song, ready for the next one
+		if [ "$status" == "0" ]; then # End song, ready for the next one
 			is_playing=0;
 			next_ready=1;
-		elif [ "$status" == "1" ]
-		then # Increase songs count
+		elif [ "$status" == "1" ]; then # Increase songs count
 			songs_count=$(($songs_count+1))
-			if [ "${current_index}" == "1" ]
-			then
+			if [ "${current_index}" == "1" ]; then
 				current_index=$songs_count;
 			fi
 			update_tmp_playlist
-		elif [ "${status:0:1}" == "2" ]
-		then # Change order method
+		elif [ "${status:0:1}" == "2" ]; then # Change order method
 			order_method=${status:1:2}
 			echo "$order_method"
 			update_tmp_playlist
-		elif [ "${status:0:1}" == "3" ]
-		then # Change playlist
+		elif [ "${status:0:1}" == "3" ]; then # Change playlist
 			playlist="${status:1}"
 			update_songs_count
 			update_tmp_playlist
@@ -423,9 +420,10 @@ do
 			echo -ne '###                           (10%)\r';
 			sleep 0.05;
 			current_song_info=$(sed "${current_index}q;d" $path_to_temp_playlist); # Format: "$song_link+$song_name"
+			OLD_IFS=$IFS
 			IFS='+'
 			read -a data <<< "$current_song_info"
-			IFS=''
+			IFS=$OLD_IFS
 			current_song_link=${data[0]}
 			current_song_name=${data[1]}
 			echo -ne '######                        (20%)\r'

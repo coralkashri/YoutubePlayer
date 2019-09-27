@@ -2,7 +2,8 @@
 
 ###############################			Functions			###############################
 function reset_terminal() {
-	tput reset
+	#tput reset
+	echo "";
 }
 
 # $1 => $arr
@@ -72,9 +73,9 @@ if [ -e "./saved_records/$current_song_name.mp4" ]; then
     echo "File exists"
 	sudo mplayer -slave -input file=$path_to_remote_mplayer "./saved_records/$current_song_name.mp4"
 else
-    echo "File './saved_records/$current_song_name.mp4' does not exist"
+	echo "File './saved_records/$current_song_name.mp4' does not exist"
 	. downloadScript.sh $current_song_link "$current_song_name" &
-	sudo mplayer -slave -input file=$path_to_remote_mplayer -cookies -cookies-file /tmp/cookie.txt -vo $(sudo youtube-dl -g --cookies /tmp/cookie.txt $current_song_link)
+	sudo mplayer -slave -input file=$path_to_remote_mplayer -cookies -cookies-file /tmp/cookie.txt -vo $(sudo youtube-dl --no-playlist -g --cookies /tmp/cookie.txt "$current_song_link")
 fi
 
 echo "0" > $path_to_status_update_file
