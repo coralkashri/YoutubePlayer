@@ -16,7 +16,8 @@ sudo ls -l;
 declare -a current_index
 declare -a songs_count
 
-###############################			Functions			###############################
+
+###############################		    Functions			###############################
 # $1 => $arr
 # The result array pass with echo, so to get the new array: n_array=$(round_array $array);
 function round_array() {
@@ -140,22 +141,21 @@ function print_current_playlist() {
 	echo -e "${GREEN}Current Playlist:${WHITE}"
 	temp_songs_names="./temp/songs_names.bin";
 	temp_songs_names1="./temp/songs_names1.bin";
-	echo "" > $temp_songs_names
+	echo -n "" > $temp_songs_names
 	while read current_song;
 	do
-	#	echo "Debug: $current_song"
 		IFS='+'
 		read -a song_info <<< "$current_song"
+		IFS=''
 		song_name=${song_info[1]}
-	#	echo "Debug: $song_name"
 		echo $song_name >> $temp_songs_names;
 	done < $path_to_temp_playlist
-	#COLORIZE_AWK_COMMAND='$current_song_name]/ { printf "\033[0;31m" } // { print $0 }'
-	#echo "Debug: $(cat $temp_songs_names)"
 	echo $(sudo cat $temp_songs_names) > $temp_songs_names1
-	awk 'BEGIN{FS="\n"} {if($1 == $current_song_name) {printf "\033[0;31m"; printf $1} else {printf "\033[1;37m"; printf $1}}' $temp_songs_names1 > $temp_songs_names
-	#$songs_names_list | awk "$COLORIZE_AWK_COMMAND" > $temp_songs_names
+	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
+#	echo $current_song_name
+#	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names
 	pr -tw100 -2 $temp_songs_names
+	echo -e "\n\n"
 	#echo -e $(pr -tw100 -2 $temp_songs_names)
 }
 
@@ -272,8 +272,10 @@ show_playlist_status=0 # hide/show current playlist
 is_command_exist "youtube-dl" exist_test
 if [ "$exist_test" -eq "1" ]
 then
-	sudo apt-get upgrade youtube-dl -y
-	sudo youtube-dl -U
+	if [ "$update_dependencies" == "" ]; then
+		sudo apt-get upgrade youtube-dl -y
+		sudo youtube-dl -U
+	fi
 	echo "youtube-dl is ready for use."
 else
 	echo "youtube-dl is not exist, do you want to install it now?"
@@ -298,7 +300,9 @@ reset_terminal
 is_command_exist "mplayer" is_command_exist "youtube-dl"
 if [ "$exist_test" -eq "1" ]
 then
-	sudo apt-get upgrade mplayer -y
+	if [ "$update_dependencies" == "" ]; then
+		sudo apt-get upgrade mplayer -y
+	fi
 	echo "mplayer is ready for use."
 else
 	echo "mplayer is not exist, do you want to install it now?"
@@ -421,6 +425,7 @@ do
 			current_song_info=$(sed "${current_index}q;d" $path_to_temp_playlist); # Format: "$song_link+$song_name"
 			IFS='+'
 			read -a data <<< "$current_song_info"
+			IFS=''
 			current_song_link=${data[0]}
 			current_song_name=${data[1]}
 			echo -ne '######                        (20%)\r'

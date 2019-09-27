@@ -65,7 +65,6 @@ reset_terminal
 
 
 ###############################			Main Loop			###############################
-#song_name=$(youtube-dl --get-title $current_song_link)
 
 echo "link: $current_song_link, name: $current_song_name"
 
