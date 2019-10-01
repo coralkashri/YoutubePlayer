@@ -10,7 +10,7 @@ SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
 cd $SCRIPTPATH
 NAME="Youtube Streaming"; echo -en "\033]0;$NAME\a"
-sudo ls -l;
+sudo echo ""
 
 ###############################		 Global Vriables		###############################
 declare -a current_index
