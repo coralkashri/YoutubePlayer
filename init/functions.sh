@@ -134,17 +134,18 @@ function print_current_playlist() {
 	done < $path_to_temp_playlist
 	cat $temp_songs_names > $temp_songs_names1
 	awk -v cs="$current_song_name" 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
-#	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names
+#	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names 
 	pr -tw100 -2 $temp_songs_names
+	sudo rm $temp_songs_names $temp_songs_names1
 	echo -e "\n\n"
 	#echo -e $(pr -tw100 -2 $temp_songs_names)
 }
 
 # $1 => $show_playlist_status
+# $2 => $show_video_status
 function print_options() {
-	show_playlist_status=$1
 	echo -e "${RED}Choose option:
-${GREEN}0. ${WHITE}$(get_show_hide_playlist_oposite_status $show_playlist_status) playlist
+${GREEN}0. ${WHITE}$(get_show_hide_oposite_status $1) playlist
 ${GREEN}1. ${WHITE}Play
 ${GREEN}2. ${WHITE}Pause / continue
 ${GREEN}3. ${WHITE}Prev song
@@ -156,20 +157,26 @@ ${GREEN}8. ${WHITE}Change order method
 ${GREEN}+. ${WHITE}Increase volume
 ${GREEN}-. ${WHITE}Decrease volume
 ${GREEN}f. ${WHITE}Full screen
+${GREEN}v. ${WHITE}$(get_show_hide_oposite_status $2) video
 ${GREEN}c. ${WHITE}Change playlist
 ${GREEN}u. ${WHITE}Update playlist songs names
-${GREEN}9. ${WHITE}Exit\n\n"
+${GREEN}9. ${WHITE}Exit${NC}\n\n"
 }
 
-# $1 => $show_playlist_status
-function get_show_hide_playlist_oposite_status() {
-	show_playlist_status=$1
+# $1 => 0  -> Show (Currently hidden)
+# $1 => !0 -> Hide (Currently shown)
+function get_show_hide_oposite_status() {
 	ret_val=""
-	if [ $show_playlist_status -eq 0 ]; then
-		ret_val="Show"
+	if [ $1 -eq 0 ]; then
+		ret_val="${GREEN}Show${WHITE}"
 	else
-		ret_val="Hide"
+		ret_val="${GREEN}Hide${WHITE}"
 	fi
-	echo "$ret_val" >> ${HOME}/Desktop/test
 	echo $ret_val
+}
+
+function comming_soon_msg() {
+	reset_terminal
+	echo -e ${YELLOW}Comming soon, press any key to continue.${WHITE}
+	read_char
 }

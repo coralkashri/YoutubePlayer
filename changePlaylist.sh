@@ -5,7 +5,7 @@ counter=0
 hash_table[0]=2
 echo -e "${YELLOW}Choose playlist (by number):"
 IFS=$'\n'
-files_list=$(ls -f "$path_to_playlists_dir"/*)
+files_list=$(ls -f "$path_to_playlists_dir"/* 2>>./temp/err_log)
 
 # 0 => Cancel
 echo -e "\t${GREEN}$counter\t\t${YELLOW}=>\t\t${WHITE}~~Cancel change~~"

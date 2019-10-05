@@ -68,13 +68,20 @@ reset_terminal
 
 echo "link: $current_song_link, name: $current_song_name"
 
+if [ $show_video_status -eq 0 ]; then
+	options="-novideo -vo null"
+else
+	options="-vo gl"
+fi
+
 if [ -e "./saved_records/$current_song_name.mp4" ]; then
-    echo "File exists"
-	sudo mplayer -slave -input file=$path_to_remote_mplayer "./saved_records/$current_song_name.mp4"
+	echo "File exists"
+	sudo mplayer $options -slave -input file=$path_to_remote_mplayer "./saved_records/$current_song_name.mp4"
 else
 	echo "File './saved_records/$current_song_name.mp4' does not exist"
 	. downloadScript.sh $current_song_link "$current_song_name" &
-	sudo mplayer -slave -input file=$path_to_remote_mplayer -cookies -cookies-file /tmp/cookie.txt -vo $(sudo youtube-dl --no-playlist -g -c --cookies /tmp/cookie.txt "$current_song_link")
+	#sudo mplayer -slave -input file=$path_to_remote_mplayer -cookies -cookies-file /tmp/cookie.txt -vo $(sudo youtube-dl --no-playlist -g -c --cookies /tmp/cookie.txt "$current_song_link")
+	youtube-dl --no-playlist "$current_song_link" -o - | mplayer $options -input file=$path_to_remote_mplayer -
 fi
 
 echo "0" > $path_to_status_update_file

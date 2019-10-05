@@ -9,7 +9,7 @@ tput reset
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
 cd $SCRIPTPATH
-NAME="Youtube Streaming"; echo -en "\033]0;$NAME\a"
+NAME="Youtube Player"; echo -en "\033]0;$NAME\007"
 sudo echo ""
 
 ###############################		 Global Vriables		###############################
@@ -26,7 +26,7 @@ set +a
 ######## Colors Define ########
 RED='\033[0;31m'
 NC='\033[0m' # No Color
-GREEN='\033[0;32m'
+GREEN='\033[1;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
@@ -79,7 +79,8 @@ path_to_playlists_dir="./playlists"
 export path_to_playlists_dir
 
 show_playlist_status=0 # hide/show current playlist
-
+show_video_status=1 # hide/show video
+export show_video_status
 
 ###############################		Check for youtube-dl	###############################
 
@@ -87,7 +88,7 @@ is_command_exist "youtube-dl" exist_test
 if [ "$exist_test" -eq "1" ]
 then
 	if [ "$update_dependencies" == "" ]; then
-		sudo apt-get upgrade youtube-dl -y
+		#sudo apt-get upgrade youtube-dl -y
 		sudo youtube-dl -U
 	fi
 	echo "youtube-dl is ready for use."
@@ -115,7 +116,16 @@ is_command_exist "mplayer" is_command_exist "youtube-dl"
 if [ "$exist_test" -eq "1" ]
 then
 	if [ "$update_dependencies" == "" ]; then
-		sudo apt-get upgrade mplayer -y
+		sudo cat /etc/apt/sources.list | grep "deb http://ppa.launchpad.net/rvm/mplayer/ubuntu karmic main" > null
+		if [ "$?" == "1" ]; then
+			sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+			sudo echo "deb http://ppa.launchpad.net/rvm/mplayer/ubuntu karmic main" >> /etc/apt/sources.list
+			sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+		fi
+		sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 03E02400
+		sudo apt-get update
+		sudo apt-get install mplayer
+		sudo apt install ffmpeg -y
 	fi
 	echo "mplayer is ready for use."
 else
@@ -172,7 +182,7 @@ reset_terminal
 ###############################			Main Loop			###############################
 while true
 do
-	print_options $show_playlist_status
+	print_options $show_playlist_status $show_video_status
 	if [ "$show_playlist_status" == "1" ]; then
 		print_current_playlist
 	fi
@@ -209,7 +219,7 @@ do
 	fi
 
 	case "$method" in
-	"0")
+	"0") #Show/Hide playlist
 		if [ "$show_playlist_status" == "0" ]; then
 			show_playlist_status=1
 		else
@@ -291,9 +301,11 @@ do
 		;;
 
 	"6") # Remove Song
+		comming_soon_msg
 		;;
 
 	"7") # Change Song
+		comming_soon_msg
 		;;
 
 	"8") # Change order method
@@ -322,6 +334,14 @@ do
 		fi
 		;;
 
+	"v") # Show/Hide video
+		if [ "$show_video_status" == "0" ]; then
+			show_video_status=1
+		else
+			show_video_status=0
+		fi
+		;;
+
 	"c") # Change playlist
 		gnome-terminal -e ./changePlaylist.sh
 		;;
@@ -344,7 +364,9 @@ do
 	reset_terminal
 
 done
-unset is_playing
-unset next_ready
+
+unset current_index songs_count \
+		default_playlist playlist songs_count current_index current_song_link current_song_name wait_for_start method is_playing next_ready is_fullscreen \
+		order_method user_interrupted_order path_to_remote_mplayer path_to_status_update_file path_to_temp_playlist path_to_playlists_dir show_playlist_status
 
 exit
