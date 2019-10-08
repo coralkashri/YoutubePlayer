@@ -2,4 +2,4 @@
 
 Youtube player- by links playlist.
 
-Run: `sudo youtubePlayer.sh`
+Run: `run.sh`
