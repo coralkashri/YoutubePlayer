@@ -85,10 +85,9 @@ export show_video_status
 ###############################		Check for youtube-dl	###############################
 
 is_command_exist "youtube-dl" exist_test
-if [ "$exist_test" -eq "1" ]
+if [ "$exist_test" == "1" ]
 then
 	if [ "$update_dependencies" == "" ]; then
-		#sudo apt-get upgrade youtube-dl -y
 		sudo youtube-dl -U
 	fi
 	echo "youtube-dl is ready for use."
@@ -98,7 +97,7 @@ else
 	if [ "$ans" == "y" ]
 	then
 		sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
-		sudo chmod a+rx /usr/local/bin/youtube-dl
+		sudo chmod 777 /usr/local/bin/youtube-dl
 		sudo youtube-dl -U
 		clear
 		echo "youtube-dl is ready for use now."
@@ -112,20 +111,24 @@ reset_terminal
 
 
 ###############################		  Check for mplayer		###############################
-is_command_exist "mplayer" is_command_exist "youtube-dl"
-if [ "$exist_test" -eq "1" ]
+function update_mplayer() {
+	sudo cat /etc/apt/sources.list | grep "deb http://ppa.launchpad.net/rvm/mplayer/ubuntu karmic main" > null
+	if [ "$?" == "1" ]; then
+		sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+		sudo echo "deb http://ppa.launchpad.net/rvm/mplayer/ubuntu karmic main" >> /etc/apt/sources.list
+		sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+	fi
+	sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 03E02400
+	sudo apt-get update
+	sudo apt-get install mplayer
+	sudo apt install ffmpeg -y
+}
+
+is_command_exist "mplayer" exist_test
+if [ "$exist_test" == "1" ]
 then
 	if [ "$update_dependencies" == "" ]; then
-		sudo cat /etc/apt/sources.list | grep "deb http://ppa.launchpad.net/rvm/mplayer/ubuntu karmic main" > null
-		if [ "$?" == "1" ]; then
-			sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-			sudo echo "deb http://ppa.launchpad.net/rvm/mplayer/ubuntu karmic main" >> /etc/apt/sources.list
-			sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
-		fi
-		sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 03E02400
-		sudo apt-get update
-		sudo apt-get install mplayer
-		sudo apt install ffmpeg -y
+		update_mplayer
 	fi
 	echo "mplayer is ready for use."
 else
@@ -134,6 +137,7 @@ else
 	if [ "$ans" == "y" ]
 	then
 		sudo apt-get install mplayer mplayer-gui mplayer-skins
+		update_mplayer
 		clear
 		echo "mplayer is ready for use now."
 	else
@@ -368,5 +372,5 @@ done
 unset current_index songs_count \
 		default_playlist playlist songs_count current_index current_song_link current_song_name wait_for_start method is_playing next_ready is_fullscreen \
 		order_method user_interrupted_order path_to_remote_mplayer path_to_status_update_file path_to_temp_playlist path_to_playlists_dir show_playlist_status
-
+		
 exit

@@ -1,3 +1,5 @@
+#! /bin/bash
+
 ###############################		    Functions			###############################
 # $1 => $arr
 # The result array pass with echo, so to get the new array: n_array=$(round_array $array);
@@ -135,9 +137,9 @@ function print_current_playlist() {
 	cat $temp_songs_names > $temp_songs_names1
 	awk -v cs="$current_song_name" 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
 #	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names 
-	pr -tw100 -2 $temp_songs_names
+	pr -tw120 -2 $temp_songs_names
 	sudo rm $temp_songs_names $temp_songs_names1
-	echo -e "\n\n"
+	echo -e "${NC}\n\n"
 	#echo -e $(pr -tw100 -2 $temp_songs_names)
 }
 
