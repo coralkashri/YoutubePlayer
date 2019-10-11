@@ -45,6 +45,7 @@ export playlist
 songs_count=$(wc -l < "$playlist")
 
 current_index=0 # starts with 1
+export current_index
 
 current_song_link=""
 export current_song_link
@@ -74,6 +75,7 @@ path_to_status_update_file="./updateStatus";
 export path_to_status_update_file
 
 path_to_temp_playlist="./temp/tmp_playlist.bin";
+export path_to_temp_playlist
 
 path_to_playlists_dir="./playlists"
 export path_to_playlists_dir
@@ -212,6 +214,10 @@ do
 			playlist="${status:1}"
 			update_songs_count
 			update_tmp_playlist
+		elif [ "${status:0:1}" == "4" ]; then # Change song
+			current_index="${status:1}"
+			echo "quit" > $path_to_remote_mplayer
+			user_interrupted_order=1
 		fi
 		sudo echo "" > $path_to_status_update_file
 	fi
@@ -309,7 +315,7 @@ do
 		;;
 
 	"7") # Change Song
-		comming_soon_msg
+		gnome-terminal -e ./changeSong.sh
 		;;
 
 	"8") # Change order method
