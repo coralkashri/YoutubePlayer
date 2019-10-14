@@ -1,5 +1,9 @@
 #! /bin/bash
 
+NAME="Youtube Player - Change Song"; echo -en "\033]0;$NAME\007"
+echo -e "${GREEN}$NAME${NC}"
+echo -e "${YELLOW}Choose song (by number):${NC}"
+
 counter=0
 
 # 0 => Cancel

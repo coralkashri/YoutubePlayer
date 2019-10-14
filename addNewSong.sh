@@ -1,5 +1,8 @@
 #! /bin/bash
 
+NAME="Youtube Player - Add New Song"; echo -en "\033]0;$NAME\007"
+echo -e "${GREEN}$NAME${NC}"
+
 echo -e "Enter the link for the song:"
 read new_song
 

@@ -1,5 +1,8 @@
 #! /bin/bash
 
+NAME="Youtube Player - Change Playlist"; echo -en "\033]0;$NAME\007"
+echo -e "${GREEN}$NAME${NC}"
+
 counter=0;
 dictionary[0]="for declaration only";
 
