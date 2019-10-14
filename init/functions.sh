@@ -68,11 +68,12 @@ function test_internet_connection() {
 }
 
 function next_song_index() {
-	current_index=$((($current_index)%$songs_count + 1))
-	if [ $current_index -eq 1 ] && [ "$order_method" == "3" ]; then
-		update_tmp_playlist
+	if [ $songs_count -gt 0 ]; then
+		current_index=$((($current_index)%$songs_count + 1))
+		if [ $current_index -eq 1 ] && [ "$order_method" == "3" ]; then
+			update_tmp_playlist
+		fi
 	fi
-	#gnome-terminal -e "echo $current_index" --window-with-profile="hold-open"
 }
 
 function prev_song_index() {
@@ -87,11 +88,11 @@ function prev_song_index() {
 function next_song_by_order_method() {
 	case "$order_method" in
 	"1") # Loop		
-	;;
+		;;
 
-	*)
-	next_song_index
-	;;
+	*) # No Loop
+		next_song_index
+		;;
 	esac
 }
 
@@ -101,10 +102,8 @@ function update_tmp_playlist() {
 	fi
 
 	case "$order_method" in
-	"0") # Default
+	"0"|"1") # Default | # Loop
 		cat $playlist > $path_to_temp_playlist;
-	;;
-	"1") # Loop
 	;;
 	"2") # Oposite
 		tac $playlist > $path_to_temp_playlist;
@@ -121,9 +120,9 @@ function update_songs_count() {
 }
 
 function print_current_playlist() {
-	echo -e "${GREEN}Current Playlist:${WHITE}"
-	temp_songs_names="./temp/songs_names.bin";
-	temp_songs_names1="./temp/songs_names1.bin";
+	echo -e "${GREEN}Current Playlist ($playlist):${WHITE}"
+	temp_songs_names="./temp/songs_names";
+	temp_songs_names1="./temp/songs_names1";
 	echo -n "" > $temp_songs_names
 	while read current_song;
 	do

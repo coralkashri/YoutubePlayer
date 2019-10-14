@@ -36,7 +36,7 @@ if [ $selected -eq 1 ]; then # Default
 elif [ $selected -eq 2 ]; then # Create new
 	echo -e "${YELLOW}Select new playlist's name:"
 	read new_playlist_name
-	echo "" > "$path_to_playlists_dir/$new_playlist_name.bin"
+	echo "" > "$path_to_playlists_dir/$new_playlist_name"
 elif [ $selected -gt 2 ]; then # Non-default playlist selected
 	echo "3${dictionary[$selected]}" > $path_to_status_update_file
 fi

@@ -1,4 +1,5 @@
-#!/bin/bash
+#! /bin/bash
+
 echo -e "Enter the link for the song:"
 read new_song
 

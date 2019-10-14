@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 if [ "$1" != "" ]
 then
@@ -36,7 +36,7 @@ export RED NC GREEN BLUE YELLOW WHITE PURPLE
 
 ###### Variables Define #######
 
-default_playlist="./playlist.bin"
+default_playlist="./playlist"
 export default_playlist
 
 playlist=$default_playlist
@@ -74,7 +74,7 @@ export path_to_remote_mplayer
 path_to_status_update_file="./updateStatus";
 export path_to_status_update_file
 
-path_to_temp_playlist="./temp/tmp_playlist.bin";
+path_to_temp_playlist="./temp/tmp_playlist";
 export path_to_temp_playlist
 
 path_to_playlists_dir="./playlists"
@@ -218,8 +218,15 @@ do
 			current_index="${status:1}"
 			echo "quit" > $path_to_remote_mplayer
 			user_interrupted_order=1
+		elif [ "${status:0:1}" == "5" ]; then # Remove song
+			songs_count=$(($songs_count-1))
+			update_tmp_playlist
 		fi
 		sudo echo "" > $path_to_status_update_file
+	fi
+
+	if [ $songs_count -eq 0 ]; then
+		next_ready=0
 	fi
 
 	if [ $next_ready -eq 1 ]
@@ -311,7 +318,7 @@ do
 		;;
 
 	"6") # Remove Song
-		comming_soon_msg
+		gnome-terminal -e ./removeSong.sh
 		;;
 
 	"7") # Change Song
