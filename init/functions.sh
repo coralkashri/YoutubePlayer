@@ -102,8 +102,21 @@ function update_tmp_playlist() {
 	fi
 
 	case "$order_method" in
-	"0"|"1") # Default | # Loop
-		cat $playlist > $path_to_temp_playlist;
+	"0") # Default
+		cat $playlist > $path_to_temp_playlist
+	;;
+	"1") # Loop
+		if [ $(grep -vxFf $playlist $path_to_temp_playlist | wc -l) -gt 0 -o $(grep -vxFf $path_to_temp_playlist $playlist | wc -l) -gt 0 ]; then 
+			# Difference detected
+			# Method:
+			# 1. Get the current song's name: 			$current_song_name
+			# 2. Update current playlist: 				cat $playlist > $path_to_temp_playlist
+			# 3. Find current song in the new list:		new_song_idx=$(cat $playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+			# 4. Apply the new song's index:			current_index=$new_song_idx
+			cat $playlist > $path_to_temp_playlist
+			new_song_idx=$(cat $playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+			current_index=$new_song_idx
+		fi
 	;;
 	"2") # Oposite
 		tac $playlist > $path_to_temp_playlist;
@@ -140,7 +153,7 @@ function print_current_playlist() {
 	cat $temp_songs_names > $temp_songs_names1
 	awk -v cs="$current_song_display_name" 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
 #	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names 
-	pr -tw120 -2 $temp_songs_names
+	pr -TW120 -2 $temp_songs_names
 	sudo rm $temp_songs_names $temp_songs_names1
 	echo -e "${NC}\n\n"
 	#echo -e $(pr -tw100 -2 $temp_songs_names)

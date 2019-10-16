@@ -219,7 +219,9 @@ do
 			update_tmp_playlist
 		elif [ "${status:0:1}" == "4" ]; then # Change song
 			current_index="${status:1}"
-			echo "quit" > $path_to_remote_mplayer
+			if [ "$is_playing" != "0" ]; then
+				echo "quit" > $path_to_remote_mplayer
+			fi
 			user_interrupted_order=1
 		elif [ "${status:0:1}" == "5" ]; then # Remove song
 			songs_count=$(($songs_count-1))
