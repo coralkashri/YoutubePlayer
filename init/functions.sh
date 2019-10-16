@@ -130,11 +130,15 @@ function print_current_playlist() {
 		IFS='+'
 		read -a song_info <<< "$current_song"
 		IFS=$OLD_IFS
-		song_name=${song_info[1]}
+		if [ "${song_info[2]}" == "" ]; then
+			song_name="${song_info[1]}"
+		else
+			song_name="${song_info[2]}"
+		fi
 		echo "$song_name" >> $temp_songs_names;
 	done < $path_to_temp_playlist
 	cat $temp_songs_names > $temp_songs_names1
-	awk -v cs="$current_song_name" 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
+	awk -v cs="$current_song_display_name" 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
 #	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names 
 	pr -tw120 -2 $temp_songs_names
 	sudo rm $temp_songs_names $temp_songs_names1

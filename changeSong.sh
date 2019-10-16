@@ -16,7 +16,11 @@ do
 	IFS='+'
 	read -a song_info <<< "$current_song"
 	IFS=$OLD_IFS
-	song_name=${song_info[1]}
+	if [ "${song_info[2]}" == "" ]; then
+		song_name="${song_info[1]}"
+	else
+		song_name="${song_info[2]}"
+	fi
 	echo -e "\t${GREEN}$counter\t\t${YELLOW}=>\t\t${WHITE}$song_name${NC}"
 	counter=$(($counter+1));
 done < $path_to_temp_playlist

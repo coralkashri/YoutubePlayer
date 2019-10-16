@@ -42,25 +42,25 @@ function test_internet_connection() {
 }
 
 ###############################		  Init MPlayer Control		###############################
-test_internet_connection
-internet_status=$?
+#test_internet_connection
+#internet_status=$?
 
 #if [ $internet_status -eq 0 ]; then
 #	echo "no internet connection. trying again in: $i"
 #fi
 
-while [ $internet_status -eq 0 ]
-do
-	reset_terminal
-	for i in 3 2 1
-	do
-		echo "no internet connection. trying again in: $i"
-		sleep 1
-		reset_terminal
-	done
-	test_internet_connection
-	internet_status=$?
-done
+#while [ $internet_status -eq 0 ]
+#do
+#	reset_terminal
+#	for i in 3 2 1
+#	do
+#		echo "no internet connection. trying again in: $i"
+#		sleep 1
+#		reset_terminal
+#	done
+#	test_internet_connection
+#	internet_status=$?
+#done
 reset_terminal
 
 
@@ -80,9 +80,14 @@ if [ "$current_song_name" != "" ]; then
 		sudo mplayer $options -slave -input file=$path_to_remote_mplayer "./saved_records/$current_song_name.mp4"
 	else
 		echo "File './saved_records/$current_song_name.mp4' does not exist"
-		. downloadScript.sh $current_song_link "$current_song_name" &
-		#sudo mplayer -slave -input file=$path_to_remote_mplayer -cookies -cookies-file /tmp/cookie.txt -vo $(sudo youtube-dl --no-playlist -g -c --cookies /tmp/cookie.txt "$current_song_link")
-		youtube-dl --no-playlist "$current_song_link" -o - | mplayer $options -input file=$path_to_remote_mplayer -
+		test_internet_connection
+		internet_status=$?
+		if [ $internet_status -eq 0 ]; then
+			echo "Can't download this file right now, there is no an internet connection."
+		else
+			. downloadScript.sh $current_song_link "$current_song_name" &
+			youtube-dl --no-playlist "$current_song_link" -o - | mplayer $options -input file=$path_to_remote_mplayer -
+		fi
 	fi
 fi
 

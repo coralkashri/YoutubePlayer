@@ -51,6 +51,8 @@ current_song_link=""
 export current_song_link
 current_song_name=""
 export current_song_name
+current_song_display_name=""
+export current_song_display_name
 
 wait_for_start=false
 
@@ -150,38 +152,39 @@ fi
 sleep 1
 reset_terminal
 
-###############################		  Init MPlayer Control		###############################
-sudo rm $path_to_remote_mplayer
-mkfifo $path_to_remote_mplayer
-sudo apt install wmctrl
-reset_terminal
-
 
 ###############################	   Check Internet Connection	###############################
-internet_status=$(test_internet_connection)
-while [ "$internet_status" == "0" ]
-do
-	reset_terminal
-	for i in 3 2 1
-	do
-		echo "no internet connection. trying again in: $i"
-		sleep 1
-		reset_terminal
-	done
-	internet_status=$(test_internet_connection)
-done
-reset_terminal
+#internet_status=$(test_internet_connection)
+#while [ "$internet_status" == "0" ]
+#do
+#	reset_terminal
+#	for i in 3 2 1
+#	do
+#		echo "no internet connection. trying again in: $i"
+#		sleep 1
+#		reset_terminal
+#	done
+#	internet_status=$(test_internet_connection)
+#done
+#reset_terminal
 
 
 ###############################		  Init Perrmissions		###############################
 sudo echo "" > $path_to_status_update_file
 sudo mkdir ./saved_records
-rm ./temp
+rm -R ./temp
 sudo mkdir ./temp
 sudo mkdir $path_to_playlists_dir
 sudo echo "" > $path_to_temp_playlist;
 sudo chmod a+rwx ./*;
 update_tmp_playlist
+reset_terminal
+
+
+###############################		  Init MPlayer Control		###############################
+sudo rm $path_to_remote_mplayer
+mkfifo $path_to_remote_mplayer
+sudo apt install wmctrl
 reset_terminal
 
 
@@ -264,7 +267,12 @@ do
 			read -a data <<< "$current_song_info"
 			IFS=$OLD_IFS
 			current_song_link=${data[0]}
-			current_song_name=${data[1]}
+			current_song_name="${data[1]}"
+			if [ "${data[2]}" == "" ]; then
+				current_song_display_name="${data[1]}"
+			else
+				current_song_display_name="${data[2]}"
+			fi
 			echo -ne '######                        (20%)\r'
 			sleep 0.05
 			echo -ne '########                      (25%)\r'

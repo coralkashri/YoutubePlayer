@@ -15,6 +15,11 @@ fi
 echo "Getting song's name..."
 song_name=$(youtube-dl --no-playlist --get-title $new_song)
 
-echo "+$song_name" >> $playlist
+echo "Enter song name (blank for: '$song_name'):"
+
+read new_song_name
+echo "+$song_name+$new_song_name" >> $playlist
+
+#echo "+$song_name" >> $playlist
 
 echo "1" > $path_to_status_update_file
