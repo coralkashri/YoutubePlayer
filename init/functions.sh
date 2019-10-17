@@ -126,8 +126,10 @@ function update_tmp_playlist() {
 	# 2. Find current song in the new list:		new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
 	# 3. Apply the new song's index:			current_index=$new_song_idx
 	if [ "$current_song_name" != "" ]; then # If there is a playing song already
-		new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
-		current_index=$new_song_idx
+		if [ $current_index -ne 1 ]; then # After shuffling the playlist, don't jump to the current song's place. Remains on song number 1.
+			new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+			current_index=$new_song_idx
+		fi
 	fi
 }
 
