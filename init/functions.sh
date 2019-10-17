@@ -109,13 +109,8 @@ function update_tmp_playlist() {
 		if [ $(grep -vxFf $playlist $path_to_temp_playlist | wc -l) -gt 0 -o $(grep -vxFf $path_to_temp_playlist $playlist | wc -l) -gt 0 ]; then 
 			# Difference detected
 			# Method:
-			# 1. Get the current song's name: 			$current_song_name
-			# 2. Update current playlist: 				cat $playlist > $path_to_temp_playlist
-			# 3. Find current song in the new list:		new_song_idx=$(cat $playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
-			# 4. Apply the new song's index:			current_index=$new_song_idx
+			# 1. Update current playlist: 				cat $playlist > $path_to_temp_playlist
 			cat $playlist > $path_to_temp_playlist
-			new_song_idx=$(cat $playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
-			current_index=$new_song_idx
 		fi
 	;;
 	"2") # Oposite
@@ -126,6 +121,14 @@ function update_tmp_playlist() {
 		cat $playlist | shuf > $path_to_temp_playlist;
 	;;
 	esac
+	# Make sure you are staying on the same song:
+	# 1. Get the current song's name: 			$current_song_name
+	# 2. Find current song in the new list:		new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+	# 3. Apply the new song's index:			current_index=$new_song_idx
+	if [ "$current_song_name" != "" ]; then # If there is a playing song already
+		new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+		current_index=$new_song_idx
+	fi
 }
 
 function update_songs_count() {
