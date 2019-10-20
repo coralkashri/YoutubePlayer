@@ -13,6 +13,8 @@ function round_array() {
 
 function reset_terminal() {
 	tput reset
+	printf '\033[?7l' # Set Wrap OFF
+	#printf '\033[?7h' # Set lines wrap ON
 }
 
 # read_char [address]var
@@ -23,8 +25,62 @@ function read_char() {
 
 # $1 => [address]var
 function read_char_if_availible() {
-	read -n 1 -t 1 char
-	eval $1=$char
+	_key() {
+	  local kp
+	  ESC=$'\e'
+#	  ESC2=$'\x'
+	  _KEY=
+	  read -d '' -sn1 -t1 -i "no-key" _KEY
+	  case $_KEY in
+		"$ESC")
+		    while read -d '' -sn1 -t1 kp
+		    do
+		      _KEY=$_KEY$kp
+		      case $kp in
+		        [a-zA-NP-Z~]) break;;
+		      esac
+		    done
+	    ;;
+#	    "$ESC2")
+#	    	while read -d '' -sn1 -t1 kp
+#		    do
+#		      _KEY=$_KEY$kp
+#		      case $kp in
+#		        [a-zA-NP-Z~]) break;;
+#		      esac
+#		    done
+#		;;
+	  esac
+	  printf -v "${1:-_KEY}" "%s" "$_KEY"
+	}
+	 
+	_key x
+
+	case $x in
+#	  $'\eOP') 		key=F1 		;;
+#	  $'\eOQ') 		key=F2 		;;
+#	  $'\eOR') 		key=F3 		;;
+#	  $'\eOS') 		key=F4 		;;
+	  $'\e[15~') 	key=F5 		;;
+	  $'\e[17~') 	key=F6 		;;
+	  $'\e[18~') 	key=F7		;;
+	  $'\e[19~') 	key=F8		;;
+	  $'\e[20~') 	key=F9		;;
+	  $'\e[21~') 	key=F10		;;
+#	  $'\e[21~') 	key=F11		;;
+	  $'\e[24~') 	key=F12		;;
+	  $'\e[A' ) 	key=UP		;;
+	  $'\e[B' ) 	key=DOWN	;;
+	  $'\e[C' ) 	key=RIGHT	;;
+	  $'\e[D' ) 	key=LEFT	;;
+#	  $'\x0D' ) 	key=ENTER	;;
+
+	  ?) 			key=$x		;;
+	  *) 			key=??? 	;;
+	esac
+
+	#read -n 1 -t 1 char
+	eval $1=$key
 }
 
 # is_command_exist "command name" [address]res_var
@@ -158,21 +214,28 @@ function print_current_playlist() {
 	cat $temp_songs_names > $temp_songs_names1
 	awk -v cs="$current_song_display_name" 'BEGIN{FS="\n"} {if($1 == cs) {printf "\033[0;31m";} else {printf "\033[1;37m";} printf $1 "\033[1;37m\n"}' $temp_songs_names1 > $temp_songs_names
 #	awk -v cs=$current_song_name 'BEGIN{FS="\n"} {printf $1 "\n" cs "\n"}' $temp_songs_names1 > $temp_songs_names 
-	pr -TW120 -2 $temp_songs_names
+#	pr -TW120 -2 $temp_songs_names
+	pr -TW120 -1 $temp_songs_names
 	sudo rm $temp_songs_names $temp_songs_names1
 	echo -e "${NC}\n\n"
 	#echo -e $(pr -tw100 -2 $temp_songs_names)
 }
 
+function print_options() {
+	oc="${BG_NONE}${WHITE}"
+	dc="${YELLOW}${BG_BLUE}"
+	echo -e "\r${oc}F5 ${dc}All Options${oc} 1 ${dc}Play${oc} 2 ${dc}Pause/Resume${oc} +/- ${dc}Volume${oc} Arrows[L/R] ${dc}Prev/Next${oc} 5 ${dc}Add song${BG_NONE}${NC}\n "
+}
+
 # $1 => $show_playlist_status
 # $2 => $show_video_status
-function print_options() {
-	echo -e "${RED}Choose option:
-${GREEN}0. ${WHITE}$(get_show_hide_oposite_status $1) playlist
-${GREEN}1. ${WHITE}Play
+function print_full_options_list() {
+	echo -e "${RED}Options List:"
+#${GREEN}0. ${WHITE}$(get_show_hide_oposite_status $1) playlist
+	echo -e "${GREEN}1. ${WHITE}Play
 ${GREEN}2. ${WHITE}Pause / continue
-${GREEN}3. ${WHITE}Prev song
-${GREEN}4. ${WHITE}Next song
+${GREEN}<-. ${WHITE}Prev song
+${GREEN}->. ${WHITE}Next song
 ${GREEN}5. ${WHITE}Add song
 ${GREEN}6. ${WHITE}Remove song
 ${GREEN}7. ${WHITE}Change song

@@ -13,8 +13,8 @@ NAME="Youtube Player"; echo -en "\033]0;$NAME\007"
 sudo echo ""
 
 ###############################		 Global Vriables		###############################
-declare -a current_index
-declare -a songs_count
+#declare -a current_index
+#declare -a songs_count
 
 ###############################   		Functions			###############################
 set -a 
@@ -32,7 +32,15 @@ YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
 PURPLE='\033[0;35m'
 
-export RED NC GREEN BLUE YELLOW WHITE PURPLE
+BG_RED='\033[0;41m'
+BG_GREEN='\033[0;42m'
+BG_BLUE='\033[0;44m'
+BG_YELLOW='\033[0;43m'
+BG_WHITE='\033[0;47m'
+BG_PURPLE='\033[0;45m'
+BG_NONE='\033[0;48m'
+
+export RED NC GREEN BLUE YELLOW WHITE PURPLE BG_RED BG_GREEN BG_BLUE BG_YELLOW BG_WHITE BG_PURPLE
 
 ###### Variables Define #######
 
@@ -61,6 +69,8 @@ method=0
 is_playing=0
 export is_playing
 
+is_pausing=0
+
 next_ready=0
 export next_ready
 
@@ -85,6 +95,8 @@ export path_to_playlists_dir
 show_playlist_status=0 # hide/show current playlist
 show_video_status=1 # hide/show video
 export show_video_status
+
+show_options=0 # hide/show options
 
 ###############################		Check for youtube-dl	###############################
 
@@ -191,44 +203,60 @@ reset_terminal
 ###############################			Main Loop			###############################
 while true
 do
-	print_options $show_playlist_status $show_video_status
-	if [ "$show_playlist_status" == "1" ]; then
+	print_options
+	
+	if [ "$show_options" == "1" ]; then
+		print_full_options_list $show_playlist_status $show_video_status
+	fi
+	
+	#if [ "$show_playlist_status" == "1" ]; then
 		print_current_playlist
+	#fi
+	
+	if [ $is_pausing -eq 1 ]; then
+		printf "==PAUSED=="
 	fi
 
-	read_char_if_availible method
+	method=""
+	status=""
+	#while [ "$method" == "" -a "$status" == "" ]; do
+		read_char_if_availible method
 
-	status=$(sed "1q;d" $path_to_status_update_file)
-	if [[ ! -z "$status" ]] ; then
-		if [ "$status" == "0" ]; then # End song, ready for the next one
-			is_playing=0;
-			next_ready=1;
-		elif [ "$status" == "1" ]; then # Increase songs count
-			songs_count=$(($songs_count+1))
-			if [ "${current_index}" == "1" ]; then
-				current_index=$songs_count;
+		status=$(sed "1q;d" $path_to_status_update_file)
+		if [[ ! -z "$status" ]] ; then
+			if [ "$status" == "0" ]; then # End song, ready for the next one
+				is_playing=0;
+				next_ready=1;
+			elif [ "$status" == "1" ]; then # Increase songs count
+				songs_count=$(($songs_count+1))
+				if [ "${current_index}" == "1" ]; then
+					current_index=$songs_count;
+				fi
+				update_tmp_playlist
+			elif [ "${status:0:1}" == "2" ]; then # Change order method
+				order_method=${status:1:2}
+				echo "$order_method"
+				update_tmp_playlist
+			elif [ "${status:0:1}" == "3" ]; then # Change playlist
+				playlist="${status:1}"
+				update_songs_count
+				update_tmp_playlist
+			elif [ "${status:0:1}" == "4" ]; then # Change song
+				new_index="${status:1}"
+				if [ $new_index -ne $current_index ]; then
+					current_index=$new_index
+					if [ "$is_playing" != "0" ]; then
+						echo "quit" > $path_to_remote_mplayer
+					fi
+					user_interrupted_order=1
+				fi
+			elif [ "${status:0:1}" == "5" ]; then # Remove song
+				songs_count=$(($songs_count-1))
+				update_tmp_playlist
 			fi
-			update_tmp_playlist
-		elif [ "${status:0:1}" == "2" ]; then # Change order method
-			order_method=${status:1:2}
-			echo "$order_method"
-			update_tmp_playlist
-		elif [ "${status:0:1}" == "3" ]; then # Change playlist
-			playlist="${status:1}"
-			update_songs_count
-			update_tmp_playlist
-		elif [ "${status:0:1}" == "4" ]; then # Change song
-			current_index="${status:1}"
-			if [ "$is_playing" != "0" ]; then
-				echo "quit" > $path_to_remote_mplayer
-			fi
-			user_interrupted_order=1
-		elif [ "${status:0:1}" == "5" ]; then # Remove song
-			songs_count=$(($songs_count-1))
-			update_tmp_playlist
+			sudo echo "" > $path_to_status_update_file
 		fi
-		sudo echo "" > $path_to_status_update_file
-	fi
+	#done
 
 	if [ $songs_count -eq 0 ]; then
 		next_ready=0
@@ -241,13 +269,20 @@ do
 	fi
 
 	case "$method" in
-	"0") #Show/Hide playlist
-		if [ "$show_playlist_status" == "0" ]; then
-			show_playlist_status=1
+	"F5")
+		if [ "$show_options" == "0" ]; then
+			show_options=1
 		else
-			show_playlist_status=0
+			show_options=0
 		fi
 		;;
+#	"0") #Show/Hide playlist
+#		if [ "$show_playlist_status" == "0" ]; then
+#			show_playlist_status=1
+#		else
+#			show_playlist_status=0
+#		fi
+#		;;
 
 	"1") #Play
 		if [ "$is_playing" == "0" ] && [ $songs_count -gt 0 ]
@@ -295,6 +330,7 @@ do
 			fi
 			echo -ne '##############################(100%)\r'
 			sleep 0.5
+			is_pausing=0
 		fi
 		;;
 
@@ -302,10 +338,16 @@ do
 		if [ $is_playing -eq 1 ]
 		then
 			echo "pause" > $path_to_remote_mplayer
+			
+			if [ $is_pausing -eq 0 ]; then
+				is_pausing=1
+			else
+				is_pausing=0
+			fi
 		fi
 		;;
 
-	"3") # Prev song
+	"LEFT") # Prev song
 		if [ $is_playing -eq 1 ]
 		then
 			echo "quit" > $path_to_remote_mplayer
@@ -314,7 +356,7 @@ do
 		user_interrupted_order=1
 		;;
 
-	"4") # Next song
+	"RIGHT") # Next song
 		if [ $is_playing -eq 1 ]
 		then
 			echo "quit" > $path_to_remote_mplayer
@@ -374,20 +416,32 @@ do
 		;;
 
 	"u") # Update songs names
-		gnome-terminal -e ./changePlaylist.sh
+		comming_soon_msg #TODO
 		;;
 
 	"9") # Exit
 		if [ $is_playing -eq 1 ]
 		then
 			echo "quit" > $path_to_remote_mplayer
+			is_playing=0
 		fi
 		break
 		;;
+		
+	"d") # Debug
+		gnome-terminal
+		;; 
 
 	*)
 		;;
 	esac
+	if [ "$is_playing" == "1" -a $user_interrupted_order -eq 0 ]; then
+		if [ $is_pausing -eq 0 ]; then
+			echo "get_property length" > $path_to_remote_mplayer
+			echo "get_property percent_pos" > $path_to_remote_mplayer
+			echo "get_property time_pos" > $path_to_remote_mplayer
+		fi
+	fi
 	reset_terminal
 
 done
