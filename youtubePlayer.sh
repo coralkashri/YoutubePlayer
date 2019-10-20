@@ -188,7 +188,7 @@ rm -R ./temp
 sudo mkdir ./temp
 sudo mkdir $path_to_playlists_dir
 sudo echo "" > $path_to_temp_playlist;
-sudo chmod a+rwx ./*;
+sudo chmod -R a+rwx ./*;
 update_tmp_playlist
 reset_terminal
 
@@ -219,7 +219,7 @@ do
 
 	method=""
 	status=""
-	#while [ "$method" == "" -a "$status" == "" ]; do
+	while [ "$method" == "" -a "$status" == "" ]; do
 		read_char_if_availible method
 
 		status=$(sed "1q;d" $path_to_status_update_file)
@@ -256,7 +256,15 @@ do
 			fi
 			sudo echo "" > $path_to_status_update_file
 		fi
-	#done
+		
+		if [ "$is_playing" == "1" -a $user_interrupted_order -eq 0 ]; then
+			if [ $is_pausing -eq 0 ]; then
+				echo "get_property length" > $path_to_remote_mplayer
+				echo "get_property percent_pos" > $path_to_remote_mplayer
+				echo "get_property time_pos" > $path_to_remote_mplayer
+			fi
+		fi
+	done
 
 	if [ $songs_count -eq 0 ]; then
 		next_ready=0
@@ -435,13 +443,6 @@ do
 	*)
 		;;
 	esac
-	if [ "$is_playing" == "1" -a $user_interrupted_order -eq 0 ]; then
-		if [ $is_pausing -eq 0 ]; then
-			echo "get_property length" > $path_to_remote_mplayer
-			echo "get_property percent_pos" > $path_to_remote_mplayer
-			echo "get_property time_pos" > $path_to_remote_mplayer
-		fi
-	fi
 	reset_terminal
 
 done
