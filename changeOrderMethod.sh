@@ -1,22 +1,26 @@
 #!/bin/bash
 
-function read_char() {
-	read -n 1 char
-	eval $1=$char
-}
+temp_order_options_file="./temp/change_rder_method_options"
+path_to_selection_res="./temp/change_order_method_selection"
 
-echo -e "${YELLOW}Choose order method:\n
-${GREEN}0 => ${WHITE}Default\n
-${GREEN}1 => ${WHITE}Loop\n
-${GREEN}2 => ${WHITE}Oposite\n
-${GREEN}3 => ${WHITE}Random\n
-${GREEN}4 => ${WHITE}Cancel\n"
+printf "" > $temp_order_options_file
+echo "Default" >> $temp_order_options_file
+echo "Loop" >> $temp_order_options_file
+echo "Oposite" >> $temp_order_options_file
+echo "Random" >> $temp_order_options_file
 
 
-read_char method
+./init/select_from_list.sh "Choose order method" $temp_order_options_file $path_to_selection_res
 
-case "$method" in
+res=$(cat $path_to_selection_res)
+OLD_IFS=$IFS
+IFS='+'
+read -a selected_info <<< "$res"
+IFS=$OLD_IFS
+selected=$((${selected_info[0]} - 1)) # -1 => Ignore the 'Cancel' option
+
+case "$selected" in
 	"0" | "1" | "2" | "3")
-		echo "2$method" > $path_to_status_update_file
+		echo "2$selected" > $path_to_status_update_file
 	;;
 esac

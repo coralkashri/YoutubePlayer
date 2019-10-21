@@ -10,7 +10,7 @@
 list_title=$1
 path_to_list=$2
 path_to_res=$3
-printf '~~Cancel change~~' | cat - $path_to_list > ./temp/select_from_list_temp && mv ./temp/select_from_list_temp $path_to_list
+echo '~~Cancel~~' | cat - $path_to_list > ./temp/select_from_list_temp && mv ./temp/select_from_list_temp $path_to_list
 
 reset_terminal() {
 	tput reset
@@ -85,5 +85,5 @@ while [ "$action" != "EXIT" ]; do
 	reset_terminal
 done
 
-res_data=$(sed "${selected}q;d" $path_to_list)
+res_data=$(sed "$(($selected + 1))q;d" $path_to_list)
 printf "$selected+$res_data" > $path_to_res
