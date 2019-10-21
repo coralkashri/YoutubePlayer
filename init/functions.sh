@@ -143,7 +143,10 @@ function prev_song_index() {
 
 function next_song_by_order_method() {
 	case "$order_method" in
-	"1") # Loop		
+	"1") # Loop
+		if [ $current_index -eq 0 ]; then # Fix Bug: Start program -> Change order method to loop -> Play first song ("1") -> infinite loop over not existing song
+			current_index=1
+		fi
 		;;
 
 	*) # No Loop
