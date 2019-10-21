@@ -184,6 +184,9 @@ function update_tmp_playlist() {
 	if [ "$current_song_name" != "" ]; then # If there is a playing song already
 		if [ $current_index -ne 1 ]; then # After shuffling the playlist, don't jump to the current song's place. Remains on song number 1.
 			new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+			if [ "$new_song_idx" == "" ]; then # Song not found - Possible explanation: The song has been removed during it's playing
+				new_song_idx=0
+			fi
 			current_index=$new_song_idx
 		fi
 	fi
