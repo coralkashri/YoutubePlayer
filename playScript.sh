@@ -140,7 +140,23 @@ if [ "$current_song_name" != "" ]; then
 			echo "Can't download this file right now, there is no an internet connection."
 		else
 			. downloadScript.sh $current_song_link "$current_song_name" &
-			youtube-dl --no-playlist "$current_song_link" -o - | mplayer $options -input file=$path_to_remote_mplayer -
+			youtube-dl --no-playlist "$current_song_link" -o - | sudo stdbuf -oL mplayer $options -input file=$path_to_remote_mplayer - |
+			{
+				while IFS= read -r line; do
+					if [[ "${line%=*}" == "ANS_length" ]]; then
+						file_len="${line#*=}" #> ${line%=*}  # echo property_value > property_name
+						#echo -e "\r$current_time / $file_len"
+					elif [[ "${line%=*}" == "ANS_percent_pos" ]]; then
+						percents="${line#*=}"
+						#echo -e "\r$percents"
+					elif [[ "${line%=*}" == "ANS_time_pos" ]]; then
+						current_time="${line#*=}"
+						cols_count=$(($(tput cols) - 25))
+						#echo $cols_count $percents
+						printf "\r$(num_to_time $(float_to_int $current_time)) $(draw_progress_bar $cols_count $percents)$(num_to_time $(float_to_int $file_len))\n"
+					fi
+				done
+			}
 		fi
 	fi
 fi
