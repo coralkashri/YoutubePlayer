@@ -20,7 +20,7 @@ while read current_song; do
 		song_name="${song_info[2]}"
 	fi
 	echo "$song_name" >> $temp_songs_names_file
-done < $path_to_temp_playlist
+done < "$path_to_temp_playlist"
 
 ./init/select_from_list.sh "Select song" $temp_songs_names_file $path_to_selection_res
 

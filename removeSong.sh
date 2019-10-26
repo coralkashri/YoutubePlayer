@@ -19,12 +19,12 @@ while read current_song; do
 		song_name="${song_info[2]}"
 	fi
 	echo "$song_name" >> $temp_songs_names_file
-done < $playlist
+done < "$playlist"
 
-./init/select_from_list.sh "Remove song" $temp_songs_names_file $path_to_selection_res
+./init/select_from_list.sh "Remove song" "$temp_songs_names_file" "$path_to_selection_res"
 
 #Get select
-res=$(cat $path_to_selection_res)
+res=$(cat "$path_to_selection_res")
 OLD_IFS=$IFS
 IFS='+'
 read -a selected_info <<< "$res"
@@ -34,7 +34,7 @@ selected=${selected_info[0]}
 path_to_temp_new_playlist="./temp/remove_song_temp_new_playlist"
 selected_song_info=$(sed "${selected}q;d" $playlist)
 
-grep -v "$selected_song_info" $playlist > $path_to_temp_new_playlist && mv $path_to_temp_new_playlist $playlist
+grep -v "$selected_song_info" "$playlist" > "$path_to_temp_new_playlist" && mv "$path_to_temp_new_playlist" "$playlist"
 
 if [ $selected -gt 0 ]; then
 	echo "5" > $path_to_status_update_file

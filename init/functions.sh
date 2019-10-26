@@ -157,27 +157,27 @@ function next_song_by_order_method() {
 
 function update_tmp_playlist() {
 	if [ "$order_method" != "1" ]; then
-		echo "" > $path_to_temp_playlist;
+		echo "" > "$path_to_temp_playlist";
 	fi
 
 	case "$order_method" in
 	"0") # Default
-		cat $playlist > $path_to_temp_playlist
+		cat "$playlist" > "$path_to_temp_playlist"
 	;;
 	"1") # Loop
-		if [ $(grep -vxFf $playlist $path_to_temp_playlist | wc -l) -gt 0 -o $(grep -vxFf $path_to_temp_playlist $playlist | wc -l) -gt 0 ]; then 
+		if [ $(grep -vxFf "$playlist" "$path_to_temp_playlist" | wc -l) -gt 0 -o $(grep -vxFf "$path_to_temp_playlist" "$playlist" | wc -l) -gt 0 ]; then 
 			# Difference detected
 			# Method:
 			# 1. Update current playlist: 				cat $playlist > $path_to_temp_playlist
-			cat $playlist > $path_to_temp_playlist
+			cat "$playlist" > $path_to_temp_playlist
 		fi
 	;;
 	"2") # Oposite
-		tac $playlist > $path_to_temp_playlist;
+		tac "$playlist" > "$path_to_temp_playlist";
 	;;
 	"3") # Random
 #		current_index=$(($RANDOM % $songs_count + 1 | bc))
-		cat $playlist | shuf > $path_to_temp_playlist;
+		cat "$playlist" | shuf > "$path_to_temp_playlist";
 	;;
 	esac
 	# Make sure you are staying on the same song:
@@ -186,7 +186,7 @@ function update_tmp_playlist() {
 	# 3. Apply the new song's index:			current_index=$new_song_idx
 	if [ "$current_song_name" != "" ]; then # If there is a playing song already
 		if [ $current_index -ne 1 ]; then # After shuffling the playlist, don't jump to the current song's place. Remains on song number 1.
-			new_song_idx=$(cat $path_to_temp_playlist | grep -n "$current_song_name" | awk -F: '{print $1}')
+			new_song_idx=$(cat "$path_to_temp_playlist" | grep -n "$current_song_name" | awk -F: '{print $1}')
 			if [ "$new_song_idx" == "" ]; then # Song not found - Possible explanation: The song has been removed during it's playing
 				new_song_idx=0
 			fi
@@ -251,7 +251,7 @@ ${GREEN}-. ${WHITE}Decrease volume
 ${GREEN}f. ${WHITE}Full screen
 ${GREEN}v. ${WHITE}$(get_show_hide_oposite_status $2) video
 ${GREEN}c. ${WHITE}Change playlist
-${GREEN}u. ${WHITE}Update playlist songs names
+${GREEN}u. ${WHITE}Update playlist songs properties
 ${GREEN}9. ${WHITE}Exit${NC}\n\n"
 }
 

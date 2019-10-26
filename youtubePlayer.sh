@@ -253,11 +253,13 @@ do
 			elif [ "${status:0:1}" == "5" ]; then # Remove song
 				songs_count=$(($songs_count-1))
 				update_tmp_playlist
+			elif [ "${status:0:1}" == "6" ]; then # Modify song
+				update_tmp_playlist
 			fi
 			sudo echo "" > $path_to_status_update_file
 		fi
 		
-		if [ "$is_playing" == "1" -a $user_interrupted_order -eq 0 ]; then
+		if [ "$is_playing" == "1" ] && [ $user_interrupted_order -eq 0 ]; then
 			if [ $is_pausing -eq 0 ]; then
 				echo "get_property length" > $path_to_remote_mplayer
 				echo "get_property percent_pos" > $path_to_remote_mplayer
@@ -306,7 +308,7 @@ do
 			wait_for_start=false;
 			echo -ne '###                           (10%)\r';
 			sleep 0.05;
-			current_song_info=$(sed "${current_index}q;d" $path_to_temp_playlist); # Format: "$song_link+$song_name"
+			current_song_info=$(sed "${current_index}q;d" "$path_to_temp_playlist"); # Format: "$song_link+$song_name"
 			OLD_IFS=$IFS
 			IFS='+'
 			read -a data <<< "$current_song_info"
@@ -328,7 +330,12 @@ do
 			echo -ne '###############               (50%)\r'
 			#play_method="mplayer -slave -input file=$path_to_remote_mplayer -cookies -cookies-file /tmp/cookie.txt -vo $(youtube-dl -g --cookies /tmp/cookie.txt $current_song_link);is_playing=0;"
 			#gnome-terminal -e "echo $play_method" --window-with-profile="hold-open"
-			. playScript.sh &
+			. playScript.sh "${data[4]}" &
+			echo -ne '#####################         (70%)\r'
+			desired_start=${data[3]}
+			if [ "$desired_start" != "" ]; then
+				echo "seek $desired_start 2" > $path_to_remote_mplayer
+			fi
 			echo -ne '###########################   (95%)\r'
 			sleep 1s
 			#wmctrl -a "Youtube Streaming"
@@ -423,8 +430,8 @@ do
 		gnome-terminal -e ./changePlaylist.sh
 		;;
 
-	"u") # Update songs names
-		comming_soon_msg #TODO
+	"u") # Modify songs
+		gnome-terminal -e ./modifySong.sh
 		;;
 
 	"9") # Exit

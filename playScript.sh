@@ -104,7 +104,13 @@ reset_terminal
 
 ###############################			Main Loop			###############################
 
-echo "link: $current_song_link, name: $current_song_name"
+desired_stop=$1
+if [ "$desired_stop" == "" ]; then
+	desired_stop=0
+	echo "link: $current_song_link, name: $current_song_name"
+else
+	echo "link: $current_song_link, name: $current_song_name, stop: $desired_stop"
+fi
 
 if [ $show_video_status -eq 0 ]; then
 	options="-novideo -vo null"
@@ -125,10 +131,13 @@ if [ "$current_song_name" != "" ]; then
 					percents="${line#*=}"
 					#echo -e "\r$percents"
 				elif [[ "${line%=*}" == "ANS_time_pos" ]]; then
-					current_time="${line#*=}"
+					current_time=${line#*=}
 					cols_count=$(($(tput cols) - 25))
 					#echo $cols_count $percents
 					printf "\r$(num_to_time $(float_to_int $current_time)) $(draw_progress_bar $cols_count $percents)$(num_to_time $(float_to_int $file_len))"
+					if [ "$desired_stop" != "0" ] && [ $(float_to_int $current_time) -gt $desired_stop ]; then
+						echo "quit" > $path_to_remote_mplayer
+					fi
 				fi
 			done
 		}

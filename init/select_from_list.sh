@@ -10,7 +10,7 @@
 list_title=$1
 path_to_list=$2
 path_to_res=$3
-echo '~~Cancel~~' | cat - $path_to_list > ./temp/select_from_list_temp && mv ./temp/select_from_list_temp $path_to_list
+echo '~~Cancel~~' | cat - "$path_to_list" > ./temp/select_from_list_temp && mv ./temp/select_from_list_temp "$path_to_list"
 
 reset_terminal() {
 	tput reset
