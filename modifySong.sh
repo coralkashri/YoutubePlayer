@@ -54,7 +54,6 @@ if [ $selected -gt 0 ]; then
 	else
 		current_start=${data[3]}
 	fi
-	
 	if [ "${data[4]}" == "" ]; then
 		current_end="None"
 	else
@@ -87,7 +86,7 @@ if [ $selected -gt 0 ]; then
 
 		local OLD=$(echo "${OLD_LINE_PATTERN}" | escape_slashes)
 		local NEW=$(echo "${NEW_LINE}" | escape_slashes)
-		sed -i '/'"${OLD}"'/s/.*/'"${NEW}"'/' "${FILE}"
+		sed -i "/$OLD/c$NEW" "$FILE"
 	}
 	new_line="${data[0]}+${data[1]}+$new_song_name+$new_start+$new_end"
 	
